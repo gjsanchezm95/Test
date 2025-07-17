@@ -21,3 +21,39 @@ JOIN #duplicados D ON
     ISNULL(T.[Senior_Leader3_userid], '') = ISNULL(D.[Senior_Leader3_userid], '') AND
     ISNULL(T.current_record, '') = ISNULL(D.current_record, '')
 WHERE D.RN > 1;
+
+
+WITH Duplicados AS (
+    SELECT *,
+           ROW_NUMBER() OVER (
+               PARTITION BY HASHBYTES('SHA2_256',
+                   CONVERT(VARCHAR(MAX), (
+                       SELECT 
+                           Date_loaded,
+                           [internal_id],
+                           [userid],
+                           [IPI_Code],
+                           [Manager_id],
+                           Comp_Planner_Mgr_Internal_id,
+                           Comp_Planner_Mgr_userid,
+                           [Override_Comp_Planer],
+                           [Override_Comments],
+                           [Bussines_Validation],
+                           [First_executive_Internal_id],
+                           [First_executive_userid],
+                           [Senior_Leader1_internal_id],
+                           [Senior_Leader1_userid],
+                           [Senior_Leader2_internal_id],
+                           [Senior_Leader2_userid],
+                           [Senior_Leader3_internal_id],
+                           [Senior_Leader3_userid],
+                           current_record
+                       FOR XML RAW
+                   ))
+               )
+               ORDER BY Date_loaded DESC
+           ) AS RN
+    FROM GHRD2019_Compensation_Hierarchy
+)
+DELETE FROM Duplicados
+WHERE RN > 1;
