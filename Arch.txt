@@ -1,13 +1,38 @@
-IF OBJECT_ID('dbo.Stg_WFSLoginHistory','U') IS NULL
-BEGIN
-  CREATE TABLE dbo.Stg_WFSLoginHistory(
-    StgId INT IDENTITY(1,1) PRIMARY KEY,
-    [Login_ID]          NVARCHAR(255) NULL,
-    [User_Name]         NVARCHAR(255) NULL,
-    [Login_DateTime]    NVARCHAR(255) NULL,  -- viene como texto dd/MM/yyyy HH:mm
-    [Login_Message]     NVARCHAR(255) NULL,  -- si el CSV la trae; si no, quedará NULL
-    [Authentication]    NVARCHAR(255) NULL,
-    [IP_Address]        NVARCHAR(255) NULL,
-    [Super_User_ID]     NVARCHAR(255) NULL
-  );
-END;
+,
+p_start AS (
+  SELECT TOP 1 v.x AS txt
+  FROM penult
+  CROSS APPLY (VALUES([Login_ID]),([User_Name]),([Login_DateTime]),([Login_Message]),
+                      ([Authentication]),([IP_Address]),([Super_User_ID])) v(x)
+  WHERE v.x LIKE 'Start Date:%'
+),
+p_end AS (
+  SELECT TOP 1 v.x AS txt
+  FROM penult
+  CROSS APPLY (VALUES([Login_ID]),([User_Name]),([Login_DateTime]),([Login_Message]),
+                      ([Authentication]),([IP_Address]),([Super_User_ID])) v(x)
+  WHERE v.x LIKE 'End Date:%'
+),
+l_run AS (
+  SELECT TOP 1 v.x AS txt
+  FROM lastrow
+  CROSS APPLY (VALUES([Login_ID]),([User_Name]),([Login_DateTime]),([Login_Message]),
+                      ([Authentication]),([IP_Address]),([Super_User_ID])) v(x)
+  WHERE v.x LIKE 'Run on:%'
+),
+l_created AS (
+  SELECT TOP 1 v.x AS txt
+  FROM lastrow
+  CROSS APPLY (VALUES([Login_ID]),([User_Name]),([Login_DateTime]),([Login_Message]),
+                      ([Authentication]),([IP_Address]),([Super_User_ID])) v(x)
+  WHERE v.x LIKE 'Created by:%'
+)
+SELECT
+  TRY_CONVERT(datetime2, LTRIM(RTRIM(SUBSTRING(ps.txt, CHARINDEX(':',ps.txt)+1, 4000))), 103) AS ParamStart,
+  TRY_CONVERT(datetime2, LTRIM(RTRIM(SUBSTRING(pe.txt, CHARINDEX(':',pe.txt)+1, 4000))), 103) AS ParamEnd,
+  TRY_CONVERT(datetime2, LTRIM(RTRIM(SUBSTRING(lr.txt, CHARINDEX(':',lr.txt)+1, 4000))), 103) AS RunOn,
+  LOWER(LTRIM(RTRIM(SUBSTRING(lc.txt, CHARINDEX(':',lc.txt)+1, 4000))))                         AS CreatedBy
+FROM p_start ps
+CROSS JOIN p_end pe
+CROSS JOIN l_run lr
+CROSS JOIN l_created lc;
