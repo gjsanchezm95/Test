@@ -1,1 +1,13 @@
-
+IF OBJECT_ID('dbo.Stg_WFSLoginHistory','U') IS NULL
+BEGIN
+  CREATE TABLE dbo.Stg_WFSLoginHistory(
+    StgId INT IDENTITY(1,1) PRIMARY KEY,
+    [Login_ID]          NVARCHAR(255) NULL,
+    [User_Name]         NVARCHAR(255) NULL,
+    [Login_DateTime]    NVARCHAR(255) NULL,  -- viene como texto dd/MM/yyyy HH:mm
+    [Login_Message]     NVARCHAR(255) NULL,  -- si el CSV la trae; si no, quedará NULL
+    [Authentication]    NVARCHAR(255) NULL,
+    [IP_Address]        NVARCHAR(255) NULL,
+    [Super_User_ID]     NVARCHAR(255) NULL
+  );
+END;
