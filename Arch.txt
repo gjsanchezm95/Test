@@ -18,3 +18,24 @@ FROM p_start   ps
 CROSS JOIN p_end     pe
 CROSS JOIN l_run     lr
 CROSS JOIN l_created lc;
+
+
+SET @ParamStart = (
+    SELECT TRY_CONVERT(datetime2, LTRIM(RTRIM(SUBSTRING(ps.txt, CHARINDEX(':',ps.txt)+1, 4000))), 103)
+    FROM p_start ps
+);
+
+SET @ParamEnd = (
+    SELECT TRY_CONVERT(datetime2, LTRIM(RTRIM(SUBSTRING(pe.txt, CHARINDEX(':',pe.txt)+1, 4000))), 103)
+    FROM p_end pe
+);
+
+SET @RunOn = (
+    SELECT TRY_CONVERT(datetime2, LTRIM(RTRIM(SUBSTRING(lr.txt, CHARINDEX(':',lr.txt)+1, 4000))), 103)
+    FROM l_run lr
+);
+
+SET @CreatedBy = (
+    SELECT LOWER(LTRIM(RTRIM(SUBSTRING(lc.txt, CHARINDEX(':',lc.txt)+1, 4000))))
+    FROM l_created lc
+);
