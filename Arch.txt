@@ -1,3 +1,20 @@
-DELETE FROM dbo.monthlyWFSSTDLoginHistory
-WHERE CAST([Parameter_Start Date] AS date) = CAST(TRY_CONVERT(datetime2, ?, 103) AS date)
-  AND CAST([Parameter_End Date]   AS date) = CAST(TRY_CONVERT(datetime2, ?, 103) AS date);
+DECLARE @ParamStart  datetime2,
+        @ParamEnd    datetime2,
+        @RunOn       datetime2,
+        @CreatedBy   nvarchar(255);
+
+-- (Tus CTEs aquí)
+-- WITH p_start AS (...), p_end AS (...), l_run AS (...), l_created AS (...)
+
+SELECT
+  @ParamStart = TRY_CONVERT(datetime2,
+                 LTRIM(RTRIM(SUBSTRING(ps.txt, CHARINDEX(':',ps.txt)+1, 4000))), 103),
+  @ParamEnd   = TRY_CONVERT(datetime2,
+                 LTRIM(RTRIM(SUBSTRING(pe.txt, CHARINDEX(':',pe.txt)+1, 4000))), 103),
+  @RunOn      = TRY_CONVERT(datetime2,
+                 LTRIM(RTRIM(SUBSTRING(lr.txt, CHARINDEX(':',lr.txt)+1, 4000))), 103),
+  @CreatedBy  = LOWER(LTRIM(RTRIM(SUBSTRING(lc.txt, CHARINDEX(':',lc.txt)+1, 4000))))
+FROM p_start   ps
+CROSS JOIN p_end     pe
+CROSS JOIN l_run     lr
+CROSS JOIN l_created lc;
