@@ -1,41 +1,14 @@
-DECLARE @ParamStart  datetime2,
-        @ParamEnd    datetime2,
-        @RunOn       datetime2,
-        @CreatedBy   nvarchar(255);
-
--- (Tus CTEs aquí)
--- WITH p_start AS (...), p_end AS (...), l_run AS (...), l_created AS (...)
-
-SELECT
-  @ParamStart = TRY_CONVERT(datetime2,
-                 LTRIM(RTRIM(SUBSTRING(ps.txt, CHARINDEX(':',ps.txt)+1, 4000))), 103),
-  @ParamEnd   = TRY_CONVERT(datetime2,
-                 LTRIM(RTRIM(SUBSTRING(pe.txt, CHARINDEX(':',pe.txt)+1, 4000))), 103),
-  @RunOn      = TRY_CONVERT(datetime2,
-                 LTRIM(RTRIM(SUBSTRING(lr.txt, CHARINDEX(':',lr.txt)+1, 4000))), 103),
-  @CreatedBy  = LOWER(LTRIM(RTRIM(SUBSTRING(lc.txt, CHARINDEX(':',lc.txt)+1, 4000))))
-FROM p_start   ps
-CROSS JOIN p_end     pe
-CROSS JOIN l_run     lr
-CROSS JOIN l_created lc;
-
-
-SET @ParamStart = (
-    SELECT TRY_CONVERT(datetime2, LTRIM(RTRIM(SUBSTRING(ps.txt, CHARINDEX(':',ps.txt)+1, 4000))), 103)
-    FROM p_start ps
-);
-
-SET @ParamEnd = (
-    SELECT TRY_CONVERT(datetime2, LTRIM(RTRIM(SUBSTRING(pe.txt, CHARINDEX(':',pe.txt)+1, 4000))), 103)
-    FROM p_end pe
-);
-
-SET @RunOn = (
-    SELECT TRY_CONVERT(datetime2, LTRIM(RTRIM(SUBSTRING(lr.txt, CHARINDEX(':',lr.txt)+1, 4000))), 103)
-    FROM l_run lr
-);
-
-SET @CreatedBy = (
-    SELECT LOWER(LTRIM(RTRIM(SUBSTRING(lc.txt, CHARINDEX(':',lc.txt)+1, 4000))))
-    FROM l_created lc
-);
+SELECT DISTINCT ci.*
+FROM [HCM].[dbo].[EC_D_demographic_compensationinfo] ci
+WHERE ci.IPI_code IN ('B1.3','B1.4','C1.5.1','C1.2.1','C1.2.2','C1.2.3','C1.2.5','C1.2.6')
+  AND (
+        YEAR(ci.effective_end_date) = 9999
+        OR ci.effective_end_date IS NULL
+        OR DATEADD(MONTH, 2, ci.effective_end_date) >= CAST(GETDATE() AS date)
+      )
+  AND (
+        YEAR(ci.effective_start_date) = 9999
+        OR (YEAR(ci.effective_start_date) < 9999
+            AND DATEADD(MONTH, 2, ci.effective_start_date) <= CAST(GETDATE() AS date))
+      )
+  AND ci.effective_start_date <> ci.effective_end_date;
