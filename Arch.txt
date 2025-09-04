@@ -12,3 +12,23 @@ WHERE ci.IPI_code IN ('B1.3','B1.4','C1.5.1','C1.2.1','C1.2.2','C1.2.3','C1.2.5'
             AND DATEADD(MONTH, 2, ci.effective_start_date) <= CAST(GETDATE() AS date))
       )
   AND ci.effective_start_date <> ci.effective_end_date;
+
+DECLARE @y int  = YEAR(GETDATE());
+DECLARE @yearStart  date = DATEFROMPARTS(@y, 1, 1);       -- 01-ene del año actual
+DECLARE @nextYearStart date = DATEFROMPARTS(@y+1, 1, 1);  -- 01-ene del año siguiente
+
+SELECT DISTINCT ci.*
+FROM [HCM].[dbo].[EC_D_demographic_compensationinfo] ci
+WHERE ci.IPI_code IN ('B1.3','B1.4','C1.5.1','C1.2.1','C1.2.2','C1.2.3','C1.2.5','C1.2.6')
+  AND (
+        -- Equivale a: DATEPART(YEAR, DATEADD(MONTH,2, start)) <= current_year
+        YEAR(ci.effective_start_date) = 9999
+        OR DATEADD(MONTH, 2, ci.effective_start_date) < @nextYearStart
+      )
+  AND (
+        -- Equivale a: DATEPART(YEAR, DATEADD(MONTH,2, end)) >= current_year
+        ci.effective_end_date IS NULL
+        OR YEAR(ci.effective_end_date) = 9999
+        OR DATEADD(MONTH, 2, ci.effective_end_date) >= @yearStart
+      )
+  AND ci.effective_start_date <> ci.effective_end_date;
