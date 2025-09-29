@@ -4,7 +4,8 @@ WITH ordered AS (
         startdate,
         enddate,
         custdate,
-        LAG(enddate) OVER (PARTITION BY Userid ORDER BY startdate) AS prev_end
+        LAG(enddate) OVER (PARTITION BY Userid ORDER BY startdate) AS prev_end,
+        COUNT(*) OVER (PARTITION BY Userid) AS cnt_records
     FROM dbo.tiempos_fuera
 ),
 gaps AS (
@@ -33,6 +34,10 @@ SELECT
     enddate,
     custdate,
     CASE
+        -- Caso especial: solo un registro y custdate NULL
+        WHEN custdate IS NULL AND cnt_records = 1
+            THEN startdate
+        -- Caso general: si hay custdate, se usa el mínimo startdate del grupo
         WHEN custdate IS NOT NULL
             THEN MIN(startdate) OVER (PARTITION BY Userid, grp)
         ELSE NULL
