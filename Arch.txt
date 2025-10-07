@@ -1,46 +1,23 @@
-WITH ordered AS (
-    SELECT
-        Userid,
-        startdate,
-        enddate,
-        custdate,
-        LAG(enddate) OVER (PARTITION BY Userid ORDER BY startdate) AS prev_end,
-        COUNT(*) OVER (PARTITION BY Userid) AS cnt_records
-    FROM dbo.tiempos_fuera
-),
-gaps AS (
-    SELECT
-        *,
-        CASE
-            WHEN prev_end IS NULL THEN 1
-            WHEN DATEDIFF(day, prev_end, startdate) > 3 THEN 1
-            ELSE 0
-        END AS is_break
-    FROM ordered
-),
-grouped AS (
-    SELECT
-        *,
-        SUM(is_break) OVER (
-            PARTITION BY Userid
-            ORDER BY startdate
-            ROWS UNBOUNDED PRECEDING
-        ) AS grp
-    FROM gaps
+!(
+(
+Job_Title == 'Pensioner' && Position_title == 'Pensioner' && EmployeeTypePen == 'Survivor - Of a Pensioner'
+) ||
+(
+Job_Title == 'Survivor' && Position_title == 'Survivor' && EmployeeTypePen == 'Survivor - Of a Pensioner'
+) ||
+(
+Job_Title == 'Pensioner' && Position_title == 'Pensioner' && EmployeeTypePen == 'Survivor - Death In Service'
+) ||
+(
+Job_Title == 'Survivor Income Benefits' && Position_title == 'Survivor Income Benefits' && EmployeeTypePen == 'Survivor - Death In Service'
+) ||
+(
+Job_Title == 'Customer Experience Associate' && Position_title == 'Customer Experience Associate' && EmployeeTypePen == 'Survivor - Of a Pensioner'
+) ||
+(
+Job_Title == 'Survivor' && Position_title == 'Survivor' && EmployeeTypePen == 'Survivor - Death In Service'
+) ||
+(
+Job_Title == 'Survivor' && Position_title == 'Survivor Income Benefits' && EmployeeTypePen == 'Survivor - Death In Service'
 )
-SELECT
-    Userid,
-    startdate,
-    enddate,
-    custdate,
-    CASE
-        -- Caso especial: solo un registro y custdate NULL
-        WHEN custdate IS NULL AND cnt_records = 1
-            THEN startdate
-        -- Caso general: si hay custdate, se usa el mínimo startdate del grupo
-        WHEN custdate IS NOT NULL
-            THEN MIN(startdate) OVER (PARTITION BY Userid, grp)
-        ELSE NULL
-    END AS new_custdate
-FROM grouped
-ORDER BY Userid, startdate;
+)
