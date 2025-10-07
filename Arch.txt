@@ -1,23 +1,37 @@
 !(
 (
-Job_Title == 'Pensioner' && Position_title == 'Pensioner' && EmployeeTypePen == 'Survivor - Of a Pensioner'
+rtrim(ltrim(Job_Title)) == 'Pensioner' && 
+rtrim(ltrim(Position_title)) == 'Pensioner' && 
+rtrim(ltrim(EmployeeTypePen)) == 'Survivor - Of a Pensioner'
 ) ||
 (
-Job_Title == 'Survivor' && Position_title == 'Survivor' && EmployeeTypePen == 'Survivor - Of a Pensioner'
+rtrim(ltrim(Job_Title)) == 'Survivor' && 
+rtrim(ltrim(Position_title)) == 'Survivor' && 
+rtrim(ltrim(EmployeeTypePen)) == 'Survivor - Of a Pensioner'
 ) ||
 (
-Job_Title == 'Pensioner' && Position_title == 'Pensioner' && EmployeeTypePen == 'Survivor - Death In Service'
+rtrim(ltrim(Job_Title)) == 'Pensioner' && 
+rtrim(ltrim(Position_title)) == 'Pensioner' && 
+rtrim(ltrim(EmployeeTypePen)) == 'Survivor - Death In Service'
 ) ||
 (
-Job_Title == 'Survivor Income Benefits' && Position_title == 'Survivor Income Benefits' && EmployeeTypePen == 'Survivor - Death In Service'
+rtrim(ltrim(Job_Title)) == 'Survivor Income Benefits' && 
+rtrim(ltrim(Position_title)) == 'Survivor Income Benefits' && 
+rtrim(ltrim(EmployeeTypePen)) == 'Survivor - Death In Service'
 ) ||
 (
-Job_Title == 'Customer Experience Associate' && Position_title == 'Customer Experience Associate' && EmployeeTypePen == 'Survivor - Of a Pensioner'
+rtrim(ltrim(Job_Title)) == 'Customer Experience Associate' && 
+rtrim(ltrim(Position_title)) == 'Customer Experience Associate' && 
+rtrim(ltrim(EmployeeTypePen)) == 'Survivor - Of a Pensioner'
 ) ||
 (
-Job_Title == 'Survivor' && Position_title == 'Survivor' && EmployeeTypePen == 'Survivor - Death In Service'
+rtrim(ltrim(Job_Title)) == 'Survivor' && 
+rtrim(ltrim(Position_title)) == 'Survivor' && 
+rtrim(ltrim(EmployeeTypePen)) == 'Survivor - Death In Service'
 ) ||
 (
-Job_Title == 'Survivor' && Position_title == 'Survivor Income Benefits' && EmployeeTypePen == 'Survivor - Death In Service'
+rtrim(ltrim(Job_Title)) == 'Survivor' && 
+rtrim(ltrim(Position_title)) == 'Survivor Income Benefits' && 
+rtrim(ltrim(EmployeeTypePen)) == 'Survivor - Death In Service'
 )
 )
