@@ -1,37 +1,45 @@
-!(
-(
-rtrim(ltrim(Job_Title)) == 'Pensioner' && 
-rtrim(ltrim(Position_title)) == 'Pensioner' && 
-rtrim(ltrim(EmployeeTypePen)) == 'Survivor - Of a Pensioner'
-) ||
-(
-rtrim(ltrim(Job_Title)) == 'Survivor' && 
-rtrim(ltrim(Position_title)) == 'Survivor' && 
-rtrim(ltrim(EmployeeTypePen)) == 'Survivor - Of a Pensioner'
-) ||
-(
-rtrim(ltrim(Job_Title)) == 'Pensioner' && 
-rtrim(ltrim(Position_title)) == 'Pensioner' && 
-rtrim(ltrim(EmployeeTypePen)) == 'Survivor - Death In Service'
-) ||
-(
-rtrim(ltrim(Job_Title)) == 'Survivor Income Benefits' && 
-rtrim(ltrim(Position_title)) == 'Survivor Income Benefits' && 
-rtrim(ltrim(EmployeeTypePen)) == 'Survivor - Death In Service'
-) ||
-(
-rtrim(ltrim(Job_Title)) == 'Customer Experience Associate' && 
-rtrim(ltrim(Position_title)) == 'Customer Experience Associate' && 
-rtrim(ltrim(EmployeeTypePen)) == 'Survivor - Of a Pensioner'
-) ||
-(
-rtrim(ltrim(Job_Title)) == 'Survivor' && 
-rtrim(ltrim(Position_title)) == 'Survivor' && 
-rtrim(ltrim(EmployeeTypePen)) == 'Survivor - Death In Service'
-) ||
-(
-rtrim(ltrim(Job_Title)) == 'Survivor' && 
-rtrim(ltrim(Position_title)) == 'Survivor Income Benefits' && 
-rtrim(ltrim(EmployeeTypePen)) == 'Survivor - Death In Service'
+import hashlib
+from io import BytesIO
+from azure.storage.blob import BlobServiceClient
+
+# Supongamos que ya tienes:
+# - blob_data: bytes (resultado de download_blob().readall())
+# - connection_string, dest_container, dest_blob_path (p.ej. "carpeta/archivo.mrk")
+
+def upload_marker_from_blob_bytes(
+    blob_data: bytes,
+    *,
+    connection_string: str,
+    dest_container: str,
+    dest_blob_path: str,     # dónde guardar el .mrk
+    encoding: str = "utf-8"
+) -> str:
+    # 1) Convertir a texto y emular el Trim() del C#
+    text = blob_data.decode(encoding, errors="replace")
+    csv_string = "\n".join(text.splitlines()).strip()
+
+    # 2) SHA-256 en hex minúsculas (equiv. BitConverter + Replace + ToLower)
+    sha256_hex = hashlib.sha256(csv_string.encode(encoding)).hexdigest()
+
+    # 3) Contenido del marker (hash + salto de línea, como WriteLine)
+    marker_bytes = (sha256_hex + "\n").encode(encoding)
+    stream = BytesIO(marker_bytes)
+    stream.seek(0)
+
+    # 4) Subir a Azure Blob
+    bsc = BlobServiceClient.from_connection_string(connection_string)
+    marker_client = bsc.get_blob_client(container=dest_container, blob=dest_blob_path)
+    marker_client.upload_blob(stream, overwrite=True, content_type="text/plain")
+
+    return sha256_hex
+
+# Ejemplo de uso dentro de tu try, tras leer el origen:
+# blob_data = blob_client.download_blob().readall()
+hash_hex = upload_marker_from_blob_bytes(
+    blob_data,
+    connection_string=connection_string,
+    dest_container=archive_container,          # o el que prefieras
+    dest_blob_path=f"{folder_name}/{blob_name}.mrk"
 )
-)
+# Si quieres incluir el hash en la respuesta/log:
+# logging.info(f"SHA-256: {hash_hex}")
